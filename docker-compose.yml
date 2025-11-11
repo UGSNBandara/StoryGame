@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=/app/data/storygame.db
+    volumes:
+      - ./backend:/app
+      - sqlite_data:/app/data
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3002:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/usr/src/app
+      - frontend_node_modules:/usr/src/app/node_modules
+
+volumes:
+  frontend_node_modules:
+    driver: local
+  sqlite_data:
+    driver: local
