@@ -12,7 +12,7 @@ function LoginRegister({ onLogin, onRegister, error, setError, onClose }) {
     setLoading(true);
     try {
       const endpoint = isLogin ? '/login' : '/register';
-      const res = await fetch('http://backend:8000' + endpoint, {
+      const res = await fetch('http://localhost:8000' + endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, username })
