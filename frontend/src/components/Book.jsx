@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 const ANIMATION_DURATION = 800; // ms
 
 // Book component with realistic single flipping page (front/back) like turn.js
-const Book = ({ levels, onLevelSelect }) => {
+const Book = ({ levels, onLevelSelect, unlockedLevelNumbers, completedLevelIds }) => {
   const [currentPage, setCurrentPage] = useState(0); // index of right page
   const [bookOpen, setBookOpen] = useState(false);
   const [isFlipping, setIsFlipping] = useState(false);
@@ -51,7 +51,24 @@ const Book = ({ levels, onLevelSelect }) => {
 
   useEffect(() => () => clearTimeout(flipTimeoutRef.current), []);
 
-  const handleLevelEnter = (id) => onLevelSelect && onLevelSelect(id);
+  const isUnlocked = (level) => {
+    if (!level) return false;
+    if (!unlockedLevelNumbers) return true;
+    const levelNumber = level.level_number ?? level.id;
+    return unlockedLevelNumbers.has(levelNumber);
+  };
+
+  const isCompleted = (level) => {
+    if (!level) return false;
+    if (!completedLevelIds) return false;
+    return completedLevelIds.has(level.id);
+  };
+
+  const handleLevelEnter = (level) => {
+    if (!level) return;
+    if (!isUnlocked(level)) return;
+    onLevelSelect && onLevelSelect(level.id);
+  };
 
   return (
     <>
@@ -98,9 +115,25 @@ const Book = ({ levels, onLevelSelect }) => {
         <div className="spine" />
         {!bookOpen && (
           <div className={`cover ${bookOpen ? 'open' : ''}`} onClick={openBook}>
-            <div style={{ fontSize:'54px', marginBottom:'12px' }}>📚</div>
-            <h2 style={{ margin:0, fontFamily:'Cinzel', letterSpacing:'1px' }}>Ancient Chronicles</h2>
-            <div className="hint">Click to Open</div>
+            <h2 style={{
+              margin:0,
+              fontFamily:'Cinzel',
+              letterSpacing:'2px',
+              fontSize:'48px',
+              fontWeight:'bold',
+              textShadow:'2px 2px 4px rgba(0,0,0,0.8)',
+              marginBottom:'16px'
+            }}>
+              Ancient Chronicles
+            </h2>
+            <div style={{
+              fontSize:'14px',
+              opacity:0.8,
+              fontStyle:'italic',
+              letterSpacing:'0.5px'
+            }}>
+              Click to Open
+            </div>
           </div>
         )}
 
@@ -128,11 +161,72 @@ const Book = ({ levels, onLevelSelect }) => {
             {/* Right static page (current) */}
             <div className="page-base page-right" style={{ zIndex:1 }}>
               <div className="page-content">
-                <h3>{levels[rightPageIndex].title}</h3>
+                <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', gap:12 }}>
+                  <h3 style={{ marginBottom:0 }}>{levels[rightPageIndex].title}</h3>
+                  <div
+                    style={{
+                      fontSize:12,
+                      color: isCompleted(levels[rightPageIndex]) ? '#14532d' : '#7a4a10',
+                      opacity: .95,
+                      background: isCompleted(levels[rightPageIndex]) ? 'rgba(34,197,94,.18)' : 'rgba(122,74,16,.10)',
+                      border: isCompleted(levels[rightPageIndex]) ? '1px solid rgba(34,197,94,.35)' : '1px solid rgba(122,74,16,.20)',
+                      padding: '4px 8px',
+                      borderRadius: 999,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {isCompleted(levels[rightPageIndex]) ? (
+                      <>
+                        <span style={{ fontSize: 14 }}>🔑</span>
+                        <span>Key Collected</span>
+                      </>
+                    ) : (
+                      <span>{isUnlocked(levels[rightPageIndex]) ? 'Unlocked' : 'Locked'}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Level Illustration between title and text */}
+                {levels[rightPageIndex].image && (
+                  <div style={{ flex:'0 0 auto', marginBottom:12 }}>
+                    <div
+                      style={{
+                        width:'100%',
+                        height:160,
+                        borderRadius:6,
+                        overflow:'hidden',
+                        boxShadow:'0 6px 14px rgba(0,0,0,.35)',
+                        border:'1px solid rgba(122,74,16,.45)',
+                        backgroundColor:'#1f2937',
+                      }}
+                    >
+                      <img
+                        src={levels[rightPageIndex].image}
+                        alt={levels[rightPageIndex].title}
+                        style={{ width:'100%', height:'100%', objectFit:'cover' }}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <p>{levels[rightPageIndex].description}</p>
-                <div style={{ display:'flex', gap:12, justifyContent:'center' }}>
-                  <button onClick={() => handleLevelEnter(levels[rightPageIndex].id)}>Enter</button>
-                  <button disabled={isFlipping || currentPage >= levels.length - 1} onClick={() => startFlip('next')}>Next →</button>
+
+                <div style={{ display:'flex', gap:12, justifyContent:'center', marginTop:8 }}>
+                  <button
+                    disabled={!isUnlocked(levels[rightPageIndex])}
+                    onClick={() => handleLevelEnter(levels[rightPageIndex])}
+                  >
+                    {isUnlocked(levels[rightPageIndex]) ? 'Enter' : 'Locked'}
+                  </button>
+                  <button
+                    disabled={isFlipping || currentPage >= levels.length - 1}
+                    onClick={() => startFlip('next')}
+                  >
+                    Next →
+                  </button>
                 </div>
               </div>
             </div>

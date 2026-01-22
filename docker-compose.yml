@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   backend:
     build: ./backend
@@ -7,22 +6,48 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=/app/data/storygame.db
+      - MONGODB_URI=mongodb://mongo:27017/storygame
     volumes:
       - ./backend:/app
       - sqlite_data:/app/data
+    command: sh -c "python init_db.py && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+  mongo-express:
+    image: mongo-express:1.0.2
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://mongo:27017/
+      - ME_CONFIG_BASICAUTH=false
+    depends_on:
+      - mongo
+    restart: unless-stopped
 
   frontend:
     build: ./frontend
     ports:
       - "3000:3000"
-    depends_on:
-      - backend
     volumes:
       - ./frontend:/usr/src/app
-      - frontend_node_modules:/usr/src/app/node_modules
+      - /usr/src/app/node_modules
+    depends_on:
+      - backend
+    restart: unless-stopped
 
 volumes:
-  frontend_node_modules:
-    driver: local
   sqlite_data:
     driver: local
+  mongo_data:
+    driver: local
+

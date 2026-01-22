@@ -25,7 +25,7 @@ export default function App() {
       {!user ? (
         <OnboardingPage onLogin={handleLogin} onRegister={handleRegister} error={error} setError={setError} />
       ) : (
-        <HomePage user={user} onLogout={handleLogout} />
+        <HomePage user={user} onUserChange={setUser} onLogout={handleLogout} />
       )}
     </div>
   );

@@ -1,47 +1,93 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Button from '../components/UI/Button';
 import Book from '../components/Book';
+import LevelScene from '../components/LevelScene';
 
-function HomePage({ user, onLogout }) {
+function HomePage({ user, onUserChange, onLogout }) {
   const [showCreditsPortal, setShowCreditsPortal] = useState(false);
   const [showProfilePortal, setShowProfilePortal] = useState(false);
+  const [currentLevel, setCurrentLevel] = useState(null);
+
+  const [levels, setLevels] = useState([]);
+  const [progress, setProgress] = useState(null);
+
+  const imageByLevelNumber = useMemo(() => ({
+    1: '/src/assets/levels/pyramid.jpg',
+    2: '/src/assets/levels/nile.jpg',
+    3: '/src/assets/levels/valley.jpg',
+    4: '/src/assets/levels/karnak.jpg',
+    5: '/src/assets/levels/chamber.jpg',
+  }), []);
+
+  async function refreshProgress() {
+    try {
+      const res = await fetch(`http://localhost:8000/users/${user.id}/progress`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Failed to load progress');
+      setProgress(data);
+      return data;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('http://localhost:8000/levels');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Failed to load levels');
+        const withImages = (data || []).map(l => ({
+          ...l,
+          image: imageByLevelNumber[l.level_number],
+        }));
+        setLevels(withImages);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+
+    refreshProgress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.id]);
+
+  const completedLevelIds = useMemo(() => {
+    const set = new Set();
+    (progress?.levels || []).forEach(l => {
+      if (l.completed) set.add(l.id);
+    });
+    return set;
+  }, [progress]);
+
+  const unlockedLevelNumbers = useMemo(() => {
+    const nextNum = progress?.next_unlocked_level_number || 1;
+    const set = new Set();
+    for (let i = 1; i <= nextNum; i++) set.add(i);
+    return set;
+  }, [progress]);
 
   const handleLevelSelect = (levelId) => {
-    alert(`Starting Level ${levelId}!`);
+    const level = levels.find(l => l.id === levelId);
+    if (level) {
+      setCurrentLevel(level);
+    }
   };
 
-  const levels = [
-    {
-      id: 1,
-      title: "The Pyramids of Giza",
-      description: "Enter the ancient pyramids and solve the riddle of the Sphinx to find your first sacred key.",
-      image: "/src/assets/levels/pyramid.jpg"
-    },
-    {
-      id: 2,
-      title: "The Nile River",
-      description: "Navigate the mighty Nile and uncover the secrets hidden in the river's ancient temples.",
-      image: "/src/assets/levels/nile.jpg"
-    },
-    {
-      id: 3,
-      title: "The Valley of Kings",
-      description: "Explore the tombs of pharaohs and decipher hieroglyphs to reveal the path forward.",
-      image: "/src/assets/levels/valley.jpg"
-    },
-    {
-      id: 4,
-      title: "The Temple of Karnak",
-      description: "Traverse the grand temple complex and solve the puzzle of the sacred obelisks.",
-      image: "/src/assets/levels/karnak.jpg"
-    },
-    {
-      id: 5,
-      title: "The Final Chamber",
-      description: "Face the ultimate challenge in the hidden chamber to repair your time machine.",
-      image: "/src/assets/levels/chamber.jpg"
+  const handleLevelComplete = async (levelId, nextLevelId = null) => {
+    setCurrentLevel(null);
+    await refreshProgress();
+    if (nextLevelId) {
+      const next = levels.find(l => l.id === nextLevelId);
+      if (next) setCurrentLevel(next);
     }
-  ];
+  };
+
+  const handleBackToBook = () => {
+    setCurrentLevel(null);
+  };
+
+  const safeCredits = user?.credits ?? 0;
 
   return (
     <>
@@ -88,7 +134,7 @@ function HomePage({ user, onLogout }) {
               className="flex items-center space-x-2 bg-treasure px-4 py-2 rounded-lg cursor-pointer hover:bg-yellow-600 transition-colors"
               onClick={() => setShowCreditsPortal(true)}
             >
-              <span className="text-black font-display text-lg">{user.credits}</span>
+              <span className="text-black font-display text-lg">{safeCredits}</span>
               <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
                 <span className="text-black text-sm font-bold">¢</span>
               </div>
@@ -107,24 +153,54 @@ function HomePage({ user, onLogout }) {
         </div>
       </div>
 
-      {/* Main Content - Magical Book */}
+      {/* Main Content */}
       <div className="relative z-10 flex flex-col" style={{ height: 'calc(100vh - 80px)' }}>
-        {/* Book Container */}
-        <div className="flex-1 flex items-center justify-center p-8">
-          <Book levels={levels} onLevelSelect={handleLevelSelect} user={user} />
-        </div>
+        {currentLevel ? (
+          <LevelScene
+            level={currentLevel}
+            user={user}
+            onUserChange={onUserChange}
+            onBack={handleBackToBook}
+            onLevelComplete={handleLevelComplete}
+          />
+        ) : (
+          <>
+            {/* Book Container */}
+            <div className="flex-1 flex items-center justify-center p-4 md:p-8">
+              <div className="w-full max-w-5xl bg-black bg-opacity-60 border border-yellow-800 rounded-3xl shadow-2xl backdrop-blur-sm p-4 md:p-8">
+                <div className="mb-4 text-center text-amber-100">
+                  <h2 className="font-display text-2xl md:text-3xl text-treasure mb-1">
+                    Choose Your Chapter
+                  </h2>
+                  <p className="text-sm md:text-base">
+                    Flip through the ancient tome and enter a level to begin your adventure.
+                  </p>
+                </div>
+                <div className="flex justify-center">
+                  <Book
+                    levels={levels}
+                    onLevelSelect={handleLevelSelect}
+                    user={user}
+                    unlockedLevelNumbers={unlockedLevelNumbers}
+                    completedLevelIds={completedLevelIds}
+                  />
+                </div>
+              </div>
+            </div>
 
-        {/* Static Footer Play Button */}
-        <div className="sticky bottom-0 p-6">
-          <div className="text-center">
-            <Button
-              className="bg-treasure hover:bg-yellow-600 text-black font-display text-2xl px-12 py-4 rounded-lg shadow-2xl border-2 border-yellow-400 transform hover:scale-105 transition-all duration-300"
-              onClick={() => alert('Starting game...')}
-            >
-              Play Game
-            </Button>
-          </div>
-        </div>
+            {/* Static Footer Play Button */}
+            <div className="sticky bottom-0 p-6">
+              <div className="text-center">
+                <Button
+                  className="bg-treasure hover:bg-yellow-600 text-black font-display text-2xl px-12 py-4 rounded-lg shadow-2xl border-2 border-yellow-400 transform hover:scale-105 transition-all duration-300"
+                  onClick={() => alert('Starting game...')}
+                >
+                  Play Game
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Credits Portal */}
@@ -145,7 +221,7 @@ function HomePage({ user, onLogout }) {
               <div className="w-20 h-20 bg-treasure rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-black text-3xl font-bold">¢</span>
               </div>
-              <div className="text-4xl font-display text-treasure mb-2">{user.credits}</div>
+              <div className="text-4xl font-display text-treasure mb-2">{safeCredits}</div>
               <div className="text-white text-lg">Available Credits</div>
             </div>
 
