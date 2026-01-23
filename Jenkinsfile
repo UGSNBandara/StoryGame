@@ -4,6 +4,9 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         DOCKERHUB_REPO = 'sulitha/storygame'
+        DEPLOY_HOST = 'devsuli@localhost'
+        DEPLOY_DIR  = '~/storygame-deploy'
+        COMPOSE_FILE = 'docker-compose.prod.yml'
     }
 
     stages {
@@ -40,15 +43,15 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy via SSH') {
             steps {
-                script {
-                    // Optional: Deploy to a server or update docker-compose
-                    sh '''
-                        echo "Deployment commands here"
-                        # Example: docker-compose pull && docker-compose up -d
-                    '''
-                }
+                sh '''
+                    ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} "
+                        cd ${DEPLOY_DIR} &&
+                        docker compose -f ${COMPOSE_FILE} pull &&
+                        docker compose -f ${COMPOSE_FILE} up -d --remove-orphans
+                    "
+                '''
             }
         }
     }

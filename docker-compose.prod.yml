@@ -1,9 +1,6 @@
-version: "3.8"
-
 services:
   mongo:
     image: mongo:7
-    container_name: storygame-mongo
     restart: unless-stopped
     volumes:
       - mongo_data:/data/db
@@ -12,7 +9,6 @@ services:
 
   backend:
     image: sulitha/storygame-backend:latest
-    container_name: storygame-backend
     restart: unless-stopped
     ports:
       - "8000:8000"
@@ -26,7 +22,6 @@ services:
 
   frontend:
     image: sulitha/storygame-frontend:latest
-    container_name: storygame-frontend
     restart: unless-stopped
     ports:
       - "3000:3000"
