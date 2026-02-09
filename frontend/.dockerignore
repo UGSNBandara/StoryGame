@@ -1,3 +1,9 @@
 node_modules
 dist
-.env
+build
+.next
+npm-debug.log
+Dockerfile
+docker-compose*.yml
+.git
+.gitignore
