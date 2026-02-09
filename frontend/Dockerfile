@@ -13,5 +13,5 @@ COPY . .
 
 EXPOSE 3000
 
-# If you use Vite/React dev server, it usually needs --host
-CMD ["npm", "run", "start"]
+# Use the correct Vite dev script with host binding
+CMD ["npm", "run", "dev"]
