@@ -54,22 +54,6 @@ pipeline {
                 '''
             }
         }
-
-        stage('Deploy to AWS') {
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
-                    sh '''
-                        aws ec2-instance-connect ssh --instance-id i-0a569caabdef1aa2e --region eu-north-1 << 'ENDSSH'
-                        cd /home/ec2-user/storygame-deploy
-                        docker-compose -f docker-compose.prod.yml pull
-                        docker-compose -f docker-compose.prod.yml up -d --force-recreate
-                        echo "AWS deployment completed at $(date)"
-                        exit
-ENDSSH
-                    '''
-                }
-            }
-        }
     }
 
     post {
@@ -78,6 +62,13 @@ ENDSSH
         }
         success {
             echo 'Pipeline succeeded!'
+            echo '=========================================='
+            echo 'To deploy to AWS Production, run:'
+            echo 'aws ec2-instance-connect ssh --instance-id i-0a569caabdef1aa2e'
+            echo 'cd /home/ec2-user/storygame-deploy'
+            echo 'docker-compose -f docker-compose.prod.yml pull'
+            echo 'docker-compose -f docker-compose.prod.yml up -d --force-recreate'
+            echo '=========================================='
         }
         failure {
             echo 'Pipeline failed!'
