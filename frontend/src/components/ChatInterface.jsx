@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Button from './UI/Button';
+import { API_URL } from '../config';
 
 function ChatInterface({ levelId, level, user, onUserChange, onLevelComplete, onBack }) {
   const [dialogue, setDialogue] = useState([]);
@@ -17,7 +18,7 @@ function ChatInterface({ levelId, level, user, onUserChange, onLevelComplete, on
 
   useEffect(() => {
     // Fetch dialogue for this level
-    fetch(`http://localhost:8000/levels/${levelId}/dialogue`)
+    fetch(`${API_URL}/levels/${levelId}/dialogue`)
       .then(res => res.json())
       .then(data => {
         const lines = Array.isArray(data) ? data : [];
@@ -104,7 +105,7 @@ function ChatInterface({ levelId, level, user, onUserChange, onLevelComplete, on
     }
     setSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:8000/levels/${levelId}/submit-key`, {
+      const res = await fetch(`${API_URL}/levels/${levelId}/submit-key`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.id, key: trimmed })

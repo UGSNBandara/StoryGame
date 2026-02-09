@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Button from '../components/UI/Button';
 import Book from '../components/Book';
 import LevelScene from '../components/LevelScene';
+import { API_URL } from '../config';
 
 function HomePage({ user, onUserChange, onLogout }) {
   const [showCreditsPortal, setShowCreditsPortal] = useState(false);
@@ -21,7 +22,7 @@ function HomePage({ user, onUserChange, onLogout }) {
 
   async function refreshProgress() {
     try {
-      const res = await fetch(`http://localhost:8000/users/${user.id}/progress`);
+      const res = await fetch(`${API_URL}/users/${user.id}/progress`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Failed to load progress');
       setProgress(data);
@@ -35,7 +36,7 @@ function HomePage({ user, onUserChange, onLogout }) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('http://localhost:8000/levels');
+        const res = await fetch(`${API_URL}/levels`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || 'Failed to load levels');
         const withImages = (data || []).map(l => ({
