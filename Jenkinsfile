@@ -54,6 +54,20 @@ pipeline {
                 '''
             }
         }
+
+        stage('Deploy to AWS') {
+            steps {
+                sh '''
+                    aws ec2-instance-connect ssh --instance-id i-0a569caabdef1aa2e --region eu-north-1 << 'ENDSSH'
+                    cd /home/ec2-user/storygame-deploy
+                    docker-compose -f docker-compose.prod.yml pull
+                    docker-compose -f docker-compose.prod.yml up -d --force-recreate
+                    echo "AWS deployment completed at $(date)"
+                    exit
+ENDSSH
+                '''
+            }
+        }
     }
 
     post {
