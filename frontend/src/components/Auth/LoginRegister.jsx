@@ -46,7 +46,7 @@ function LoginRegister({ onLogin, onRegister, error, setError, onClose }) {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1 text-white">Email</label>
+          <label className="block text-sm font-medium mb-1 text-white">Email Hi</label>
           <input
             className="input-field bg-gray-800 border-gray-600 text-white placeholder-gray-400"
             value={email}
@@ -55,7 +55,7 @@ function LoginRegister({ onLogin, onRegister, error, setError, onClose }) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1 text-white">Username :</label>
+          <label className="block text-sm font-medium mb-1 text-white">Username HI:</label>
           <input
             className="input-field bg-gray-800 border-gray-600 text-white placeholder-gray-400"
             value={username}
