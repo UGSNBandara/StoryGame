@@ -40,7 +40,7 @@ function LoginRegister({ onLogin, onRegister, error, setError, onClose }) {
       </button>
 
       <div className="text-center mb-6">
-        <h2 className="font-display text-2xl text-treasure mb-2">Enter the</h2>
+        <h2 className="font-display text-2xl text-treasure mb-2">Enter the Portral</h2>
         <p className="text-sm text-gray-300 mb-6">Begin journey through time</p>
       </div>
 
