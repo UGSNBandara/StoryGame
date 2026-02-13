@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    // Automatically check GitHub every 2 minutes for new commits
+    triggers {
+        pollSCM('H/2 * * * *')  // Check every 2 minutes
+    }
+
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         DOCKERHUB_REPO = 'sulitha/storygame'
