@@ -3,7 +3,7 @@ pipeline {
 
     // Automatically check GitHub every 2 minutes for new commits
     triggers {
-        pollSCM('H/1 * * * *')  // Check every 2 minutes
+        pollSCM('H/2 * * * *')  // Check every 2 minutes
     }
 
     environment {
