@@ -40,13 +40,13 @@ function LoginRegister({ onLogin, onRegister, error, setError, onClose }) {
       </button>
 
       <div className="text-center mb-6">
-        <h2 className="font-display text-2xl text-treasure mb-2">Enter the Portal</h2>
+        <h2 className="font-display text-2xl text-treasure mb-2">Enter the</h2>
         <p className="text-sm text-gray-300 mb-6">Begin journey through time</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1 text-white">Email Hi</label>
+          <label className="block text-sm font-medium mb-1 text-white">Email :</label>
           <input
             className="input-field bg-gray-800 border-gray-600 text-white placeholder-gray-400"
             value={email}
@@ -55,7 +55,7 @@ function LoginRegister({ onLogin, onRegister, error, setError, onClose }) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1 text-white">Username HI:</label>
+          <label className="block text-sm font-medium mb-1 text-white">Username :</label>
           <input
             className="input-field bg-gray-800 border-gray-600 text-white placeholder-gray-400"
             value={username}
